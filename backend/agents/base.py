@@ -13,10 +13,10 @@ class BaseAgent(ABC):
     每个 Agent 负责一个专业领域，通过 LangGraph State 共享数据。
     """
 
-    def __init__(self, agent_id: str, system_prompt: str | None = None):
+    def __init__(self, agent_id: str, system_prompt: str | None = None, llm: Any = None):
         self.agent_id = agent_id
         self.system_prompt = system_prompt or self._default_system_prompt()
-        self.llm = get_llm_for_agent(agent_id)
+        self.llm = llm if llm is not None else get_llm_for_agent(agent_id)
 
     @abstractmethod
     def _default_system_prompt(self) -> str:

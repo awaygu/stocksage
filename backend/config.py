@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     llm_model: str = Field(default="gpt-4o", alias="LLM_MODEL")
     llm_temperature: float = Field(default=0.1, alias="LLM_TEMPERATURE")
 
+    # Tushare (A股数据源, 2159 积分)
+    tushare_token: str = Field(default="", alias="TUSHARE_TOKEN")
+
     # Backend
     backend_host: str = Field(default="0.0.0.0", alias="BACKEND_HOST")
     backend_port: int = Field(default=8000, alias="BACKEND_PORT")
