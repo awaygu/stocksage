@@ -43,7 +43,7 @@ env/
 logs/
 
 # Data
-data/
+/data/
 *.csv
 *.xlsx
 *.db

@@ -5,9 +5,14 @@ import os
 from backend.config import Settings
 
 
-def test_settings_has_tushare_token_field():
-    """settings 实例应包含 tushare_token 字段,默认空字符串。"""
-    # 不依赖 .env 文件,直接构造
+def test_settings_has_tushare_token_field(monkeypatch):
+    """settings 实例应包含 tushare_token 字段,默认空字符串。
+
+    需屏蔽真实环境变量 TUSHARE_TOKEN: Settings(_env_file=None) 只禁用 .env 文件,
+    Pydantic-settings 仍会读取 OS 环境变量,否则在已配置 token 的环境下会读到非空值。
+    """
+    monkeypatch.delenv("TUSHARE_TOKEN", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     settings = Settings(_env_file=None)
     assert hasattr(settings, "tushare_token")
     assert settings.tushare_token == ""
