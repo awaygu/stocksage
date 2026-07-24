@@ -1,30 +1,30 @@
 <template>
-  <div class="min-h-screen bg-slate-900 text-slate-200">
-    <header class="border-b border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
-      <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-          </div>
-          <div>
-            <h1 class="text-lg font-bold text-white">StockSage</h1>
-            <p class="text-xs text-slate-400">多Agent股票研究系统</p>
-          </div>
-        </div>
-        <div class="text-xs text-slate-500">
-          v1.0.0 · MVP
-        </div>
-      </div>
-    </header>
-
-    <main class="max-w-5xl mx-auto px-4 py-6">
-      <ChatContainer />
-    </main>
-  </div>
+  <AppShell :connected="isConnected">
+    <ChatContainer
+      :is-connected="isConnected"
+      :is-loading="isLoading"
+      :agent-statuses="agentStatuses"
+      :report="report"
+      :error="error"
+      :send-query="sendQuery"
+    />
+  </AppShell>
 </template>
 
 <script setup lang="ts">
+import AppShell from './components/App/AppShell.vue'
 import ChatContainer from './components/Chat/ChatContainer.vue'
+import { useChatSession } from './composables/useSSE'
+
+// SSE 会话生于 app 根:报告流需跨 ChatContainer 局部消息状态留存,
+// 顶栏连接状态也读同一来源。每次 sendQuery 新建一条 SSE 连接,
+// 故无需 per-page-load 的稳定 session id(WS 时代的 refresh-reset 限制不再适用)。
+const {
+  isConnected,
+  isLoading,
+  agentStatuses,
+  report,
+  error,
+  sendQuery,
+} = useChatSession()
 </script>

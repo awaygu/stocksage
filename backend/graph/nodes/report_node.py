@@ -88,10 +88,17 @@ class ReportNode:
         ]
 
         try:
-            response = await llm.ainvoke(messages)
-            report = str(response.content)
+            # 流式生成:逐 token 推流,前端边收边渲染
+            report = ""
+            async for chunk in llm.astream(messages):
+                token = str(chunk.content)
+                if token:
+                    report += token
+                    await event_bus.publish_stream_chunk(session_id, token)
         except Exception:
+            # LLM 失败:用拼接报告兜底,也经流式推一次,前端仍能看到内容
             report = self._fallback_report(stock_str, query, sections_text)
+            await event_bus.publish_stream_chunk(session_id, report)
 
         await event_bus.publish_agent_status(session_id, "report", "completed")
 

@@ -1,25 +1,34 @@
 <template>
-  <div v-if="entries.length > 0" class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-3">
-    <p class="text-xs text-slate-500 mb-2">Agent 执行状态</p>
-    <div class="flex flex-wrap gap-2">
-      <div
-        v-for="[key, status] in entries"
-        :key="key"
-        class="flex items-center gap-2 px-2.5 py-1.5 bg-slate-900/50 rounded-lg text-xs"
-      >
-        <span>{{ agentIcons[key] || '🔹' }}</span>
-        <span class="text-slate-300">{{ agentLabels[key] || key }}</span>
-        <div class="flex items-center gap-1">
-          <div class="w-1.5 h-1.5 rounded-full" :class="[statusColor(status.status), status.status === 'running' ? 'animate-pulse' : '']" />
-          <span class="text-slate-500">{{ statusText(status.status) }}</span>
+  <div v-if="stages.length > 0" class="animate-node-enter">
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-2">
+      <template v-for="(stage, i) in stages" :key="stage.id">
+        <div
+          class="flex items-center gap-1.5 flex-shrink-0"
+          :class="statusOf(stage) === 'skipped' ? 'opacity-40' : ''"
+        >
+          <span
+            class="w-2 h-2 rounded-full flex-shrink-0"
+            :class="[dotClass(stage), isRunning(stage) ? 'pulse-running' : '']"
+          />
+          <span
+            class="text-[12px] leading-none whitespace-nowrap"
+            :class="labelClass(stage)"
+          >{{ stage.label }}</span>
         </div>
-      </div>
+
+        <span
+          v-if="i < stages.length - 1"
+          class="flex-shrink-0 h-px w-3"
+          :class="statusOf(stage) === 'completed' ? 'bg-accent/40' : 'bg-line'"
+        />
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { STAGES, type StageMeta } from '../../composables/agents'
 
 interface AgentStatusItem {
   agent_id: string
@@ -31,61 +40,33 @@ const props = defineProps<{
   statuses: Record<string, AgentStatusItem>
 }>()
 
-const entries = computed(() => Object.entries(props.statuses))
+const stages = computed(() =>
+  STAGES.filter((s) => props.statuses[s.id]?.status !== undefined),
+)
 
-const agentLabels: Record<string, string> = {
-  router: '意图解析',
-  market_data: '市场数据',
-  technical: '技术分析',
-  fundamental: '基本面分析',
-  news_sentiment: '新闻情感',
-  macro: '宏观分析',
-  industry: '行业分析',
-  risk: '风险评估',
-  synthesis: '综合决策',
-  report: '报告生成',
-}
+const statusOf = (stage: StageMeta) => props.statuses[stage.id]?.status
+const isRunning = (stage: StageMeta) => statusOf(stage) === 'running'
 
-const agentIcons: Record<string, string> = {
-  router: '🧭',
-  market_data: '📊',
-  technical: '📈',
-  fundamental: '📋',
-  news_sentiment: '📰',
-  macro: '🌍',
-  industry: '🏭',
-  risk: '⚠️',
-  synthesis: '🧠',
-  report: '📝',
-}
-
-const statusColor = (status: string) => {
-  switch (status) {
-    case 'running':
-      return 'bg-amber-500'
-    case 'completed':
-      return 'bg-emerald-500'
-    case 'failed':
-      return 'bg-red-500'
-    case 'skipped':
-      return 'bg-slate-500'
-    default:
-      return 'bg-slate-600'
+const dotClass = (stage: StageMeta) => {
+  switch (statusOf(stage)) {
+    case 'running': return 'bg-accent'
+    case 'completed': return 'bg-accent'
+    case 'failed': return 'bg-err'
+    case 'skipped': return 'bg-ink-faint'
+    default: return 'bg-line'
   }
 }
 
-const statusText = (status: string) => {
-  switch (status) {
-    case 'running':
-      return '执行中'
-    case 'completed':
-      return '已完成'
-    case 'failed':
-      return '失败'
-    case 'skipped':
-      return '跳过'
-    default:
-      return '待执行'
-  }
+const labelClass = (stage: StageMeta) => {
+  const st = statusOf(stage)
+  if (st === 'completed') return 'text-ink'
+  if (st === 'running') return 'text-ink font-medium'
+  if (st === 'failed') return 'text-err'
+  return 'text-ink-faint'
 }
 </script>
+
+<style scoped>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>

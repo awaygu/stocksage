@@ -1,22 +1,27 @@
 <template>
-  <div class="flex gap-3" :class="isUser ? 'flex-row-reverse' : ''">
-    <!-- Avatar -->
-    <div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" :class="isUser ? 'bg-emerald-500/20' : 'bg-blue-500/20'">
-      <svg v-if="isUser" class="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-      <svg v-else class="w-4 h-4 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    </div>
+  <div class="flex gap-3" :class="isUser ? 'justify-end' : 'justify-start'">
+    <div
+      v-if="!isUser"
+      class="shrink-0 w-7 h-7 rounded-full bg-accent text-white flex items-center justify-center text-[13px] font-semibold mt-0.5 select-none"
+    >S</div>
 
-    <!-- Content -->
-    <div class="max-w-[85%]" :class="isUser ? 'items-end' : 'items-start'">
-      <div class="px-4 py-3 rounded-xl text-sm" :class="isUser ? 'bg-emerald-500/20 text-emerald-100' : 'bg-slate-800 text-slate-300'">
-        <p v-if="isUser">{{ content }}</p>
-        <div v-else class="prose prose-invert prose-sm max-w-none">
-          <VueMarkdown :source="content" />
-        </div>
+    <div :class="isUser ? 'max-w-[80%]' : 'min-w-0 flex-1'">
+      <div
+        v-if="isUser"
+        class="bg-surface rounded-[18px] px-4 py-2.5 text-[15px] leading-relaxed text-ink whitespace-pre-wrap break-words"
+      >{{ content }}</div>
+
+      <div
+        v-else
+        class="report animate-type-in break-words pt-1"
+        :class="isLast ? 'min-h-[1.5rem]' : ''"
+      >
+        <VueMarkdown :source="content" />
+        <span
+          v-if="streaming"
+          class="inline-block w-[0.55em] h-[1.05em] -mb-[0.15em] ml-[1px] bg-accent align-baseline animate-caret-blink"
+          aria-hidden="true"
+        />
       </div>
     </div>
   </div>
@@ -26,10 +31,12 @@
 import { computed } from 'vue'
 import VueMarkdown from 'vue-markdown-render'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   role: 'user' | 'assistant'
   content: string
-}>()
+  isLast?: boolean
+  streaming?: boolean
+}>(), { isLast: false, streaming: false })
 
 const isUser = computed(() => props.role === 'user')
 </script>
